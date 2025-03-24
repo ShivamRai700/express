@@ -1,8 +1,8 @@
 'use strict'
 
-var assert = require('assert')
+var assert = require('node:assert')
 var express = require('..');
-var methods = require('methods');
+var methods = require('../lib/utils').methods;
 var request = require('supertest');
 var utils = require('./support/utils');
 
@@ -175,6 +175,19 @@ describe('res', function(){
       .get('/')
       .expect('Content-Type', 'text/plain; charset=utf-8')
       .expect(200, 'hey', done);
+    })
+
+    it('should accept Uint8Array', function(done){
+      var app = express();
+      app.use(function(req, res){
+        const encodedHey = new TextEncoder().encode("hey");
+        res.set("Content-Type", "text/plain").send(encodedHey);
+      })
+
+      request(app)
+        .get("/")
+        .expect("Content-Type", "text/plain; charset=utf-8")
+        .expect(200, "hey", done);
     })
 
     it('should not override ETag', function (done) {

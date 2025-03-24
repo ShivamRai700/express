@@ -1,13 +1,13 @@
 'use strict'
 
 var after = require('after');
-var assert = require('assert')
-var AsyncLocalStorage = require('async_hooks').AsyncLocalStorage
+var assert = require('node:assert')
+var AsyncLocalStorage = require('node:async_hooks').AsyncLocalStorage
 
 var express = require('../')
   , request = require('supertest')
 var onFinished = require('on-finished');
-var path = require('path');
+var path = require('node:path');
 var fixtures = path.join(__dirname, 'fixtures');
 var utils = require('./support/utils');
 
@@ -76,6 +76,19 @@ describe('res', function(){
         .set('If-None-Match', etag)
         .expect(304, done);
       });
+    });
+
+    it('should disable the ETag function if requested', function (done) {
+      var app = createApp(path.resolve(fixtures, 'name.txt')).disable('etag');
+
+      request(app)
+      .get('/')
+      .expect(handleHeaders)
+      .expect(200, done);
+
+      function handleHeaders (res) {
+        assert(res.headers.etag === undefined);
+      }
     });
 
     it('should 404 for directory', function (done) {
